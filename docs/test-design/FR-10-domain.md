@@ -1,29 +1,42 @@
-# FR-10 — Order State Machine — Domain Testing (Equivalence Class Partitioning)
+# FR-10 (Mobile) — Order Cancellation State Machine — Domain Testing (Equivalence Class Partitioning)
 
 > **Technique:** Domain Testing per course lecture **CSC13003 — S04**, applied as
-> **state-transition testing**. The "input" is the triple **(current state, requested target,
-> actor)**; two triples share an equivalence class iff the spec expects the **same result**
-> (allowed vs rejected). **Valid classes = legal transitions; invalid classes = illegal
-> transitions.** **Coverage (Step 3):** legal transitions **combined** into a walk through the
-> machine; each illegal transition **isolated** in its own test. **Oracle = `README.md` FR-10
-> only**; `spec-undefined`/`spec-ambiguous` where silent; **no PASS/FAIL** (execution decides).
+> **state-transition testing** on the **mobile platform**. The "input" is the pair **(order
+> current state, cancel action)**; two inputs share an equivalence class iff the spec expects the
+> **same result**. **4-step approach:** (1) Input & Output variables → (2) equivalence classes
+> (valid + invalid) → (3) best representative → (4) ordered/state fields → boundaries
+> (`FR-10-bva.md`). **Coverage (Step 3):** valid classes **combined**; each invalid class
+> **isolated**. **Oracle = `README.md`**; `spec-undefined`/`spec-ambiguous` where silent; **no
+> PASS/FAIL** (execution decides).
 >
-> **Endpoints:** admin — `PUT /api/admin/orders/:id/status {status}`; user self-cancel —
-> `PUT /api/orders/:id/cancel`.
+> **Platform scope.** The React Native app (`frontend-mobile/App.js`) exposes **only the user
+> self-cancel** slice of FR-10 — there is **no admin panel on the device**, so the admin forward
+> transitions (`pending→confirmed→shipping→delivered`) and admin-cancel are **fixtures built via
+> the admin API**, not mobile actions. Cancel action: `PUT /api/orders/:id/cancel` with the user
+> JWT.
 
-**Spec (README 141–162).** 5 states: `pending, confirmed, shipping, delivered, canceled`.
-Legal transitions:
+**Spec anchors (the oracle):**
+- **FR-10** — 5 states `pending, confirmed, shipping, delivered, canceled`; `delivered` and
+  `canceled` are **FINAL** (no exit); **when `shipping`, the User may NOT self-cancel — admin only**.
+- **FR-20** — mobile "Hủy đơn hàng … chỉ được hủy khi `pending` hoặc `confirmed`".
+- **FR-11** — a user sees/acts on **only their own** orders.
+- **FR-21** — Vietnamese status labels; danger/cancel actions are **red**.
+- **FR-24** — empty order history shows a friendly empty state.
 
-| From | To | Trigger |
-|------|----|---------|
-| pending | confirmed | admin confirms |
-| confirmed | shipping | admin ships |
-| shipping | delivered | admin completes |
-| pending | canceled | user **or** admin cancels |
-| confirmed | canceled | user **or** admin cancels |
+> **Grounding (not the oracle):** `cancelOrder()` → `PUT /api/orders/:id/cancel` (App.js:312); the
+> **"Hủy đơn" button renders only when `status ∈ {pending, confirmed}`** (App.js:961);
+> `statusLabel()` maps the 5 states to Vietnamese (App.js:331).
 
-Constraints: **`delivered` and `canceled` are FINAL** — no transition out. **When `shipping`,
-the User may NOT self-cancel — only Admin may act.** Every illegal transition must return an error.
+---
+
+## The two-layer principle (why mobile FR-10 needs UI *and* API cases)
+
+FR-10 must be enforced by the **server**; the mobile button-gate is only a UX convenience. Since
+the app *hides* the "Hủy đơn" button for `shipping`/`delivered`/`canceled`, a test looking **only
+at the UI** sees "cannot cancel" and wrongly concludes FR-10 is met — while the backend
+`PUT /cancel` may still accept an illegal cancel. **Every forbidden state therefore gets two
+classes: (L1) UI — button hidden; (L2) API — direct call rejected.** L1 passing does not imply L2
+passes; the UI gate can *mask* the server defect.
 
 ---
 
@@ -31,106 +44,97 @@ the User may NOT self-cancel — only Admin may act.** Every illegal transition 
 
 | Kind | Variable | Domain |
 |------|----------|--------|
-| **Input** | current state | {pending, confirmed, shipping, delivered, canceled} |
-| **Input** | requested target state | {pending, confirmed, shipping, delivered, canceled} |
-| **Input** | actor | {user (self, `/cancel`), admin (`/admin/.../status`)} |
-| **Input** | target `status` value | valid enum member / unknown string (e.g. `foo`) |
-| **Output** | success — transition applied | order status updated |
-| **Output** | error — illegal transition | "Invalid state transition …" |
-| **Output** | error — user forbidden (shipping+) | rejection: user may not cancel a shipping/final order |
+| **Input (state)** | order `status` | pending / confirmed / shipping / delivered / canceled |
+| **Input (action)** | cancel | tap "Hủy đơn" (L1 context) / direct `PUT /cancel` (L2) |
+| **Input (identity)** | order ownership | own order / another user's order (API only) |
+| **Output — UI** | "Hủy đơn" button | shown / hidden |
+| **Output — UI** | status label | Vietnamese text (`statusLabel`) |
+| **Output — UI** | post-action feedback | success `Alert` + list refresh / error `Alert` |
+| **Output — UI** | empty history | "Bạn chưa có đơn hàng nào." |
+| **Output — API** | cancel result | 200 → `canceled` / 4xx rejection (+ error message) |
 
 ---
 
-## Step 2 — Complete transition matrix (the partition set)
+## Step 2 — Complete set of equivalence classes
 
-Legend: **✔** legal · **�’** illegal (must reject) · **F** source is a final state (all exits illegal).
-Rows = current state; columns = target.
-
-| From \ To | pending | confirmed | shipping | delivered | canceled |
-|-----------|---------|-----------|----------|-----------|----------|
-| **pending** | �’ self | **✔ (admin)** | �’ | �’ | **✔ (user/admin)** |
-| **confirmed** | �’ | �’ self | **✔ (admin)** | �’ | **✔ (user/admin)** |
-| **shipping** | �’ | �’ | �’ self | **✔ (admin)** | admin-only ✔ / **user �’** (see note) |
-| **delivered** | �’ F | �’ F | �’ F | �’ F | �’ F |
-| **canceled** | �’ F | �’ F | �’ F | �’ F | �’ F |
-
-**Equivalence classes derived from the matrix:**
-
-| EC | Class | Members | Representative |
-|----|-------|---------|----------------|
-| EC1 | valid: pending→confirmed (admin) | 1 | order in `pending` |
-| EC2 | valid: confirmed→shipping (admin) | 1 | order in `confirmed` |
-| EC3 | valid: shipping→delivered (admin) | 1 | order in `shipping` |
-| EC4 | valid: pending→canceled (user) | 1 | user cancels own `pending` |
-| EC5 | valid: confirmed→canceled (user) | 1 | user cancels own `confirmed` |
-| EC6 | valid: pending/confirmed→canceled (admin) | 2 | admin cancels |
-| EC7 | **invalid: transition OUT of `delivered`** (final) | 4 targets | delivered→shipping |
-| EC8 | **invalid: transition OUT of `canceled`** (final) | 4 targets | canceled→delivered |
-| EC9 | **invalid: skip-ahead** (e.g. pending→shipping, pending→delivered, confirmed→delivered) | several | pending→delivered |
-| EC10 | **invalid: backward** (e.g. confirmed→pending, shipping→confirmed) | several | shipping→pending |
-| EC11 | **invalid: user self-cancel while `shipping`** (admin-only) | 1 | user `/cancel` a shipping order |
-| EC12 | invalid: unknown target status | — | status=`foo` |
-| EC13 | **spec-ambiguous: admin cancel from `shipping`** | 1 | text allows admin-act, diagram omits → probe |
-| EC-O1 | output: success | — | status updated |
-| EC-O2 | output: illegal-transition error | — | error message |
-| EC-O3 | output: user-forbidden error | — | rejection |
-
-> **Note on EC13:** the diagram branches to `canceled` only from `pending`/`confirmed`, but the
-> text says "when shipping, only Admin may act" — implying admin *can* cancel a shipping order.
-> This is an intentional spec ambiguity → mark `spec-ambiguous`, report as a spec issue, don't
-> pre-judge the verdict.
+| EC | Variable (In/Out) | Condition | Class (valid/invalid) | Representative |
+|----|-------------------|-----------|-----------------------|----------------|
+| EC1 | status × button (UI/L1) | FR-20 cancelable | valid: `pending` → button **shown** | order pending |
+| EC2 | status × button (UI/L1) | FR-20 cancelable | valid: `confirmed` → button **shown** | order confirmed |
+| EC3 | status × button (UI/L1) | FR-20/FR-10 not user-cancelable | **invalid**: `shipping` → button **hidden** | order shipping |
+| EC4 | status × button (UI/L1) | FR-10 final | **invalid**: `delivered` → button **hidden** | order delivered |
+| EC5 | status × button (UI/L1) | FR-10 final | **invalid**: `canceled` → button **hidden** | order canceled |
+| EC6 | cancel action (L2) | FR-10 valid transition | valid: cancel `pending` → `canceled` | user token, pending |
+| EC7 | cancel action (L2) | FR-10 valid transition | valid: cancel `confirmed` → `canceled` | user token, confirmed |
+| EC8 | cancel action (L2) | FR-10 user-forbidden when shipping | **invalid**: force-cancel `shipping` via API | user token, shipping |
+| EC9 | cancel action (L2) | FR-10 final | **invalid**: force-cancel `delivered` via API | user token, delivered |
+| EC10 | cancel action (L2) | FR-10 final | **invalid**: force-cancel `canceled` via API | user token, canceled |
+| EC11 | ownership (L2) | FR-11 own-only | **invalid**: cancel another user's order | 2nd user's order id |
+| EC12 | status label (UI) | FR-21 Vietnamese | valid: each state → correct VN label | 5 states |
+| EC13 | empty history (UI) | FR-24 empty state | valid: no orders → friendly message | new account |
+| EC14 | button style (UI) | FR-21 danger = red | valid: cancel button is red | red button |
+| EC15 | action feedback (UI) | robustness | **invalid**: backend unreachable on tap | offline |
+| EC-O1 | success (out) | after valid cancel | success `Alert`; status shows `Đã hủy`; list refreshed | — |
+| EC-O2 | error (out) | after rejected/failed cancel | error `Alert` with backend/failure message | — |
 
 ---
 
 ## Step 3 — Selected test cases
 
-### Valid classes — combined into a happy-path walk
+### Valid classes — combined (UI happy paths)
 
-| ID | Classes (EC) | Steps | Precondition | Expected (per spec) | Rationale |
-|----|--------------|-------|--------------|---------------------|-----------|
-| DT-01 | EC1,EC2,EC3,EC-O1 | admin drives one order: pending→confirmed→shipping→delivered | order `pending`; admin token | Each step succeeds; ends `delivered` (FR-10 legal path) | one walk covers all 3 admin forward transitions |
-| DT-02 | EC4,EC-O1 | user `/cancel` own `pending` order | order `pending`; owner token | Succeeds → `canceled` (FR-10 user-cancel) | valid user-cancel (pending) |
-| DT-03 | EC5,EC-O1 | user `/cancel` own `confirmed` order | order `confirmed`; owner token | Succeeds → `canceled` (FR-10) | valid user-cancel (confirmed) |
-| DT-04 | EC6,EC-O1 | admin sets `pending`→`canceled` | order `pending`; admin token | Succeeds → `canceled` (FR-10) | valid admin cancel |
+| ID | Classes (EC) | Steps (mobile) | Precondition (fixture) | Expected (per spec) | Rationale |
+|----|--------------|----------------|------------------------|---------------------|-----------|
+| DT-01 | EC1,EC6,EC12,EC14,EC-O1 | Profile → order history; on a **pending** order tap "Hủy đơn" | login user; 1 order `pending` | Button shown (red); tap → success Alert; status → **"Đã hủy"** (FR-10/FR-20/FR-21) | packs cancelable + label + style + success |
+| DT-02 | EC2,EC7,EC-O1 | On a **confirmed** order tap "Hủy đơn" | order driven to `confirmed` (admin API) | Button shown; tap → success → `canceled` (FR-10/FR-20) | valid cancel from confirmed |
+| DT-03 | EC13 | Open order history with no orders | fresh user, 0 orders | "Bạn chưa có đơn hàng nào." empty state (FR-24) | empty-state output |
 
-### Invalid classes — one illegal transition isolated per test
+### Invalid classes — one isolated per test — UI layer (L1: button hidden)
+
+| ID | Class (EC) | Steps (mobile) | Precondition | Expected (per spec) | Rationale |
+|----|-----------|----------------|--------------|---------------------|-----------|
+| DT-04 | EC3 (only) | Open history on a **shipping** order | order → `shipping` (admin API) | **No "Hủy đơn" button** (FR-20: user can't cancel when shipping) | shipping hidden (L1) |
+| DT-05 | EC4 (only) | Open history on a **delivered** order | order → `delivered` | No cancel button (final, FR-10) | delivered hidden (L1) |
+| DT-06 | EC5 (only) | Open history on a **canceled** order | order `canceled` | No cancel button (final, FR-10) | canceled hidden (L1) |
+
+### Invalid classes — one isolated per test — server layer (L2: API must reject)
+
+| ID | Class (EC) | Steps (direct API, user token) | Precondition | Expected (per spec) | Rationale |
+|----|-----------|--------------------------------|--------------|---------------------|-----------|
+| DT-07 | EC8 (only) | `PUT /api/orders/:id/cancel` on a **shipping** order | shipping order owned by user | **Reject (4xx)** — user may not cancel when shipping (FR-10). *UI hides the button; the server must still reject.* | **key: UI gate must not mask server** |
+| DT-08 | EC9 (only) | `PUT /cancel` on a **delivered** order | delivered order | Reject — final (FR-10) | final enforcement (L2) |
+| DT-09 | EC10 (only) | `PUT /cancel` on a **canceled** order | canceled order | Reject — final/already (FR-10) | final enforcement (L2) |
+| DT-10 | EC11 (only) | `PUT /cancel` with **user A** token on **user B's** pending order | 2nd user owns the order | Reject — act on own orders only (FR-11) | ownership (L2) |
+
+### Interaction / robustness / ambiguity
 
 | ID | Class (EC) | Steps | Precondition | Expected (per spec) | Rationale |
 |----|-----------|-------|--------------|---------------------|-----------|
-| DT-05 | EC7 (only) | admin sets `delivered`→`shipping` | order `delivered`; admin | **Reject** — `delivered` is FINAL (FR-10) | final-state exit isolated |
-| DT-06 | EC7 (only) | admin sets `delivered`→`canceled` | order `delivered`; admin | Reject — final state (FR-10) | 2nd delivered-exit rep |
-| DT-07 | EC8 (only) | admin sets `canceled`→`delivered` | order `canceled`; admin | **Reject** — `canceled` is FINAL (FR-10) | **key planted-defect probe** |
-| DT-08 | EC8 (only) | admin sets `canceled`→`confirmed` | order `canceled`; admin | Reject — final state (FR-10) | 2nd canceled-exit rep |
-| DT-09 | EC9 (only) | admin sets `pending`→`delivered` | order `pending`; admin | Reject — skip-ahead not legal (FR-10) | skip-ahead isolated |
-| DT-10 | EC9 (only) | admin sets `pending`→`shipping` | order `pending`; admin | Reject — skip-ahead (FR-10) | 2nd skip rep |
-| DT-11 | EC10 (only) | admin sets `shipping`→`confirmed` | order `shipping`; admin | Reject — backward not legal (FR-10) | backward isolated |
-| DT-12 | EC11 (only) | **user** `/cancel` a `shipping` order | order `shipping`; owner token | **Reject** — user may not self-cancel when shipping; admin only (FR-10) | **key planted-defect probe** |
-| DT-13 | EC12 (only) | admin sets status=`foo` | order `pending`; admin | Reject — unknown status (FR-10 "invalid transition") | unknown-enum isolated |
-
-### Interaction / ambiguity cases
-
-| ID | Class (EC) | Steps | Precondition | Expected (per spec) | Rationale |
-|----|-----------|-------|--------------|---------------------|-----------|
-| DT-14 | EC13 | admin sets `shipping`→`canceled` | order `shipping`; admin | `spec-ambiguous` — text permits admin action; diagram omits. Probe & report. | resolves diagram/text conflict |
-| DT-15 | EC11 × ownership | user `/cancel` **another user's** `pending` order | order owned by someone else | Reject — user acts only on own orders (FR-11 scoping) | actor × ownership interaction |
+| DT-11 | EC3 × EC8 (L1 vs L2 at shipping) | Compare DT-04 (button hidden) with DT-07 (API reject) | shipping order | **Both** must hold; button hidden **but** API accepts ⇒ UI masking an FR-10 server defect | exposes the two-layer gap |
+| DT-12 | EC12 (all states) | Read the status label for each of the 5 states | one order per state | Each shows the correct Vietnamese label (FR-21); no raw enum shown | statusLabel coverage |
+| DT-13 | EC15,EC-O2 | Tap "Hủy đơn" with backend unreachable | pending order; backend down | Error `Alert`; order unchanged; no crash (robustness) | failure handling |
+| DT-14 | spec-ambiguous | On the device, is there ANY path for a user to cancel a `shipping` order? | shipping order | `spec-ambiguous` — FR-10 text says "only admin may act" when shipping; the diagram omits admin-cancel-from-shipping. Probe & report; mobile has no admin path anyway | resolves diagram/text conflict |
 
 ---
 
 ## Coverage check (skill checklist)
 
-- [x] 4-step approach named; state-transition framing + full N×N matrix.
-- [x] **Output** classes partitioned (success / illegal-transition / user-forbidden).
-- [x] Complete partition set (EC1…EC13) precedes selected cases.
-- [x] Legal transitions **combined** (DT-01 walk); each illegal class **isolated** (DT-05…13).
-- [x] **Actor dimension** (user vs admin) covered — EC4/5 vs EC6, and EC11 user-forbidden.
-- [x] Final-state exits (EC7/EC8) and the shipping user-cancel rule (EC11) explicitly tested.
-- [x] Ambiguity marked `spec-ambiguous` (EC13/DT-14); interaction DT-15.
-- [x] No numeric range here; the **edge cases** (final-state exits, actor-permission edge) go to `FR-10-bva.md`.
+- [x] 4-step approach named; mobile state-transition framing (user-cancel slice only).
+- [x] **Output** classes partitioned (UI button/label/feedback/empty + API result), not only inputs.
+- [x] Complete partition table (EC1…EC15 + outputs) precedes selected cases.
+- [x] Valid classes **combined** (DT-01/02/03); each invalid class **isolated** (DT-04…10).
+- [x] **Two-layer** encoded: every forbidden state has an L1 (UI hidden) and L2 (API reject) case.
+- [x] Ownership (FR-11), robustness, and label (FR-21) classes present; interaction DT-11; ambiguity DT-14.
+- [x] Ordered state edge (cancelable → not) handed to **`FR-10-bva.md`**.
 
-## Execution notes (design-only file)
-Fixtures need orders in each state. Create an order (`POST /api/checkout`, starts `pending`), then
-drive it with admin `PUT /api/admin/orders/:id/status` to reach `confirmed`/`shipping`/`delivered`;
-to obtain a `canceled` order, cancel a `pending` one. `node database.js` resets. Get both tokens
-(admin + owner user). **DT-07 (canceled→delivered) and DT-12 (user cancels shipping) are the two
-highest-risk classes** — the SUT is known to under-enforce final-state and actor rules. Capture
-each status/JSON; record Actual/Status/Evidence in the shared results table (workflow §6).
+## Execution notes (mobile, design-only file)
+- Set `API_URL` in `App.js` to the dev machine's **LAN IP**; `npx expo start`; use Expo Go /
+  emulator; backend on `:3000` reachable from the device network.
+- **Order-state fixtures** are built via the admin API (mobile can't): checkout as the user →
+  `pending`; `PUT /api/admin/orders/:id/status` (admin token) → `confirmed`/`shipping`/`delivered`;
+  cancel a fresh `pending` order → `canceled`.
+- Capture **screenshots** of each order-history state (button shown vs hidden) for L1 evidence;
+  capture the raw `PUT /cancel` status + JSON (Postman/cURL) for L2 (the device UI won't show it).
+- **DT-07 (force-cancel shipping) and DT-11 (L1↔L2 gap) are the highest-risk cases** — the backend
+  is known to under-enforce the shipping/final rules that the UI merely hides. `node database.js`
+  resets. Record Actual/Status/Evidence in the shared results table (workflow §6).

@@ -1,87 +1,83 @@
-# FR-10 — Order State Machine — Boundary Value Analysis (BVA)
+# FR-10 (Mobile) — Order Cancellation State Machine — Boundary Value Analysis (BVA)
 
 > **Technique:** BVA = **Step 4 of Domain Testing** (course lecture **CSC13003 — S04**). *A
 > program is more likely to fail at a boundary.* FR-10 has **no numeric range**, so BVA is applied
-> to the two genuine *ordinal* edges of the state machine, where the two lecture edge-defects show
-> up as their state-machine analogues:
-> - **Inequality mis-specified** → the **wrong side of a terminal-state edge** is treated as
->   transitionable (e.g. an implementation that lets a *final* state still transition — the
->   `canceled→delivered` class).
-> - **Boundary value mistyped / off-by-one** → the **actor-permission edge is placed one state
->   too far** (e.g. user-cancel allowed through `shipping` instead of stopping at `confirmed`).
+> to the **ordinal state edge** where cancellation permission flips — observed on **mobile** at
+> **two layers**: the "Hủy đơn" **button visibility** (L1) and the **server enforcement** (L2).
+> The two lecture edge-defects appear as state-machine analogues:
+> - **Inequality mis-specified** → a **final state still transitions** (`canceled`/`delivered`
+>   cancel accepted).
+> - **Boundary value mistyped / off-by-one** → the **cancel-permission edge placed one state too
+>   far** (user-cancel allowed through `shipping` instead of stopping at `confirmed`).
 >
-> **Oracle = `README.md` FR-10**; **no PASS/FAIL**. Complements `FR-10-domain.md` — **edges only**
-> (the full transition matrix and mid-machine transitions live there).
+> **Oracle = `README.md`** (FR-10 + FR-20); **no PASS/FAIL**. Complements `FR-10-domain.md` —
+> **edges only** (class reps live there). **Scope:** mobile user self-cancel via
+> `PUT /api/orders/:id/cancel`; the button-gate is at App.js:961.
 
 ---
 
 ## Step 1–2 — Boundaries & operators
 
-Order the lifecycle as a progression: `pending(0) → confirmed(1) → shipping(2) → delivered(3)`,
-with `canceled` as an absorbing exit from `pending`/`confirmed`.
+Order the lifecycle `pending(0) → confirmed(1) → shipping(2) → delivered(3)`; `canceled`
+absorbing. Two edges matter on mobile:
 
-| # | "Boundary" | Edge / operator (spec) |
-|---|-----------|------------------------|
-| B1 | **Terminal-state edge** — the line between *non-final* (may transition) and *final* (`delivered`, `canceled`; may NOT) | Rule: source `∉ {delivered, canceled}` to transition. On/over the edge (source **is** final) ⇒ **reject**. |
-| B2 | **User-cancel permission edge** along the progression | Rule: user self-cancel allowed while state `≤ confirmed`; **first forbidden state = `shipping`**. The edge sits **between `confirmed` (LB-side, allowed)** and `shipping` (just over, forbidden). |
-| B3 | **Forward-progress adjacency edge** | Only the *adjacent* forward step is legal (`n → n+1`); a step of size ≥2 (skip-ahead) or ≤0 (backward/self) is over the edge ⇒ reject. |
+| # | "Boundary" | Rule / operator (spec) | Layers |
+|---|-----------|------------------------|--------|
+| B1 | **cancel-permission edge** | FR-20: user-cancel allowed while state `≤ confirmed`; **first forbidden = `shipping`**. `confirmed` (LB) allowed; `shipping` (LB+1) forbidden. | L1 button visibility + L2 API |
+| B2 | **terminal-state edge** | FR-10: `delivered`/`canceled` are **final** — never cancelable | L1 button hidden + L2 API reject |
+
+> B1 is the signature edge: `confirmed` (last cancelable) and `shipping` (first forbidden) pin it
+> exactly. On mobile the button-visibility line is drawn **between confirmed and shipping**
+> (App.js:961) — L1 tests whether the **UI** draws it correctly; L2 tests whether the **server**
+> draws the same line (the planted backend defect lives at L2).
 
 ---
 
 ## Step 3–4 — Boundary cases
 
-### B1 — terminal-state edge (just-before-final vs on/over-final)
+### B1 — cancel-permission edge (straddle: pending / confirmed / shipping / delivered), both layers
 
-| ID | Boundary b (rule) | State tested | Actor | Precondition | Expected (per spec) | Probes |
-|----|-------------------|--------------|-------|--------------|---------------------|--------|
-| BVA-01 | last non-final source (shipping) → its one legal exit | `shipping`→`delivered` | admin | order `shipping` | **Accept** — legal forward, still pre-final | LB (just inside) |
-| BVA-02 | on the edge: source = `delivered` (final) | `delivered`→`shipping` | admin | order `delivered` | **Reject** — final, no exit (FR-10) | on-edge (final) |
-| BVA-03 | on the edge: source = `delivered` (final), other target | `delivered`→`canceled` | admin | order `delivered` | Reject — final (FR-10) | on-edge alt target |
-| BVA-04 | on the edge: source = `canceled` (final) | `canceled`→`delivered` | admin | order `canceled` | **Reject** — final, no exit (FR-10) | **on-edge — key defect probe** |
-| BVA-05 | over the edge: source = `canceled` (final), other target | `canceled`→`confirmed` | admin | order `canceled` | Reject — final (FR-10) | on-edge alt target |
+| ID | Boundary (operator, rule) | State | Layer | Precondition (fixture) | Expected (per spec) | Probes |
+|----|---------------------------|-------|-------|------------------------|---------------------|--------|
+| BVA-01 | LB−1: `pending` (inside allowed) | pending | L1 | order `pending` | "Hủy đơn" button **shown** (FR-20) | inside allowed (UI) |
+| BVA-02 | LB−1 action | pending | L2 | order `pending`, user token | `PUT /cancel` → **200 → canceled** (FR-10) | inside allowed (server) |
+| BVA-03 | **LB: `confirmed` (last cancelable)** | confirmed | L1 | order `confirmed` | Button **shown** (FR-20) | LB (allowed, UI) |
+| BVA-04 | **LB: `confirmed`** action | confirmed | L2 | order `confirmed`, user token | `PUT /cancel` → **200 → canceled** (FR-10) | LB (server allows) |
+| BVA-05 | **LB+1: `shipping` (first forbidden)** | shipping | L1 | order `shipping` | Button **hidden** (FR-20: no user-cancel when shipping) | **just over (UI)** |
+| BVA-06 | **LB+1: `shipping`** forced action | shipping | L2 | order `shipping`, user token | `PUT /cancel` → **reject 4xx** (FR-10). *If accepted, the hidden button masked a server bug.* | **just over (server — key)** |
+| BVA-07 | LB+2: `delivered` (past edge, also final) | delivered | L1 | order `delivered` | Button **hidden** (final, FR-10) | beyond edge (UI) |
+| BVA-08 | LB+2: `delivered` forced action | delivered | L2 | order `delivered`, user token | `PUT /cancel` → **reject** (final, FR-10) | beyond edge (server) |
 
-### B2 — user-cancel permission edge (confirmed = last allowed; shipping = first forbidden)
+### B2 — terminal-state edge (server enforcement)
 
-| ID | Boundary b (rule) | State tested | Actor | Precondition | Expected (per spec) | Probes |
-|----|-------------------|--------------|-------|--------------|---------------------|--------|
-| BVA-06 | LB−1: `pending` (well inside allowed) | user `/cancel` `pending` | user (owner) | order `pending` | **Accept** → canceled (FR-10) | inside allowed |
-| BVA-07 | **LB: `confirmed` — last user-cancelable** | user `/cancel` `confirmed` | user (owner) | order `confirmed` | **Accept** → canceled (FR-10) | LB (on, allowed) |
-| BVA-08 | **LB+1: `shipping` — first user-forbidden** | user `/cancel` `shipping` | user (owner) | order `shipping` | **Reject** — user may not self-cancel when shipping; admin only (FR-10) | **just over edge — key defect probe** |
-| BVA-09 | LB+2: `delivered` (past edge, also final) | user `/cancel` `delivered` | user (owner) | order `delivered` | Reject — forbidden + final (FR-10) | beyond edge |
-| BVA-10 | admin at the same edge (contrast) | admin acts on `shipping` | admin | order `shipping` | Admin may act (→`delivered` legal; cancel = `spec-ambiguous`, see domain DT-14) | edge differs by actor |
-
-### B3 — forward-progress adjacency edge (step size)
-
-| ID | Boundary b (rule) | Transition tested | Actor | Precondition | Expected (per spec) | Probes |
-|----|-------------------|-------------------|-------|--------------|---------------------|--------|
-| BVA-11 | step = +1 (adjacent, legal) | `pending`→`confirmed` | admin | order `pending` | **Accept** (FR-10) | on legal step |
-| BVA-12 | step = +2 (skip-ahead, just over) | `pending`→`shipping` | admin | order `pending` | **Reject** — not adjacent (FR-10) | +1 over legal step |
-| BVA-13 | step = +3 (max skip) | `pending`→`delivered` | admin | order `pending` | Reject — skip-ahead (FR-10) | extreme skip |
-| BVA-14 | step = 0 (self-loop) | `confirmed`→`confirmed` | admin | order `confirmed` | Reject/no-op — not a legal transition (`spec-undefined` on no-op vs error) | zero step |
-| BVA-15 | step = −1 (backward, just under) | `shipping`→`confirmed` | admin | order `shipping` | Reject — backward (FR-10) | below legal step |
+| ID | Boundary (operator, rule) | State | Layer | Precondition | Expected (per spec) | Probes |
+|----|---------------------------|-------|-------|--------------|---------------------|--------|
+| BVA-09 | on edge: `delivered` final | delivered | L2 | delivered order | `PUT /cancel` → reject — no exit from final (FR-10) | on-edge (dup-guard of BVA-08, terminal framing) |
+| BVA-10 | on edge: `canceled` final/already | canceled | L2 | canceled order | `PUT /cancel` → reject — already final (FR-10) | on-edge |
 
 ---
 
 ## Coverage check (skill checklist)
 
-- [x] Method summary + rationale mapping the two lecture edge-defects to their state-machine analogues.
-- [x] B1 straddles the terminal-state edge (last-non-final accept vs on-final reject, both final states).
-- [x] B2 straddles the actor-permission edge with LB−1/LB/LB+1/LB+2 (`pending`/`confirmed`/`shipping`/`delivered`) + admin contrast.
-- [x] B3 straddles the adjacency edge with step −1/0/+1/+2/+3.
-- [x] Operator/side stated per boundary; `spec-undefined`/`spec-ambiguous` where the spec is silent (BVA-10/14).
-- [x] No duplication with `FR-10-domain.md` (matrix + mid-machine transitions there; edges here).
+- [x] Method summary + rationale mapping the two lecture edge-defects to their mobile state-machine analogues.
+- [x] B1 straddled at **both layers**: `pending`(LB−1) / `confirmed`(LB) / `shipping`(LB+1) / `delivered`(LB+2), UI **and** API.
+- [x] B2 terminal edge (`delivered`, `canceled`) enforced at the server (L2).
+- [x] Operator/side stated: cancel allowed while `≤ confirmed`; forbidden from `shipping` onward; finals never cancelable.
+- [x] The L1↔L2 contrast at `shipping` (BVA-05 vs BVA-06) is explicit — the masked-bug edge.
+- [x] No duplication with `FR-10-domain.md` (class reps there; edges here).
 
-## Highest-value boundaries in FR-10
-1. **BVA-04 — `canceled → delivered`** (on the terminal-state edge). A final state must reject all
-   exits; an implementation that carves out this one transition fails **only** here — the
-   state-machine form of an "inequality mis-specified" defect.
-2. **BVA-08 — user cancels a `shipping` order** (one state past the permission edge). Spec forbids
-   user self-cancel from `shipping`; an off-by-one that extends user-cancel one state too far
-   fails **only** at this value. `confirmed` (BVA-07, allowed) and `shipping` (BVA-08, forbidden)
-   together pin the edge exactly.
+## Highest-value boundary (mobile FR-10)
+**BVA-05 + BVA-06 — the `confirmed → shipping` permission flip.** The app draws the button line
+here (App.js:961), so **BVA-05** verifies the UI hides the button at `shipping` (likely correct),
+while **BVA-06** forces the API and checks the **server** rejects — the layer where the planted
+defect (user-cancel-while-shipping accepted) actually lives. **Passing BVA-05 alone is a false
+positive for FR-10; BVA-06 is the case that catches the bug.** `confirmed` (BVA-03/04, allowed)
+and `shipping` (BVA-05/06, forbidden) pin the edge exactly.
 
 ## Execution notes
-Build each source-state fixture as in `FR-10-domain.md` (checkout → drive via admin status
-updates; cancel a pending order to reach `canceled`). Use the **owner** token for B2 user cases
-and the admin token for B1/B3. `node database.js` between destructive runs. Capture each
-status/JSON; record Actual/Status/Evidence in the shared results table (workflow §6).
+Build states via the admin API (mobile can't reach `confirmed`/`shipping`/`delivered`): checkout →
+`pending`, then admin `PUT /api/admin/orders/:id/status`; cancel a fresh `pending` order for
+`canceled`. For **L1** rows capture a **screenshot** of the order card (button shown/hidden); for
+**L2** rows capture the raw `PUT /api/orders/:id/cancel` status + JSON (Postman/cURL) with the
+**user** token. `API_URL` → LAN IP; `node database.js` resets between destructive runs. Record
+Actual/Status/Evidence in the shared results table (workflow §6).
