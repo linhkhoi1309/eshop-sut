@@ -312,4 +312,54 @@ const FR10 = [
   cancel("FR10-BVA-10", "FR-10", "canceled terminal: PUT /cancel → reject (B2 on-edge)", "canceled", { reject: true }),
 ];
 
-export const cases = [...FR05, ...FR09, ...FR14, ...FR10];
+// ===== SUPPLEMENTAL — gaps beyond the 124-case report =========================
+// #1 FR-10 ADMIN state machine (the mobile rewrite dropped admin-transition coverage).
+// #2 FR-14 referential integrity on category delete.
+const SUPP = [
+  { id: "FR10-ADM-01", feature: "FR-10", kind: "auto",
+    expected: "Reject — `canceled` is FINAL; admin must not move canceled → delivered (FR-10)",
+    async run(ctx) {
+      const id = await makeOrder(ctx, "canceled");
+      const r = await api("PUT", `/api/admin/orders/${id}/status`, { token: ctx.tokens.admin, body: { status: "delivered" } });
+      return { actual: `status ${r.status}`, pass: r.status >= 400, reason: r.status >= 400 ? "" : "resurrected a canceled order to delivered" };
+    } },
+  { id: "FR10-ADM-02", feature: "FR-10", kind: "auto",
+    expected: "Reject — `delivered` is FINAL; delivered → shipping not allowed (FR-10) [control]",
+    async run(ctx) {
+      const id = await makeOrder(ctx, "delivered");
+      const r = await api("PUT", `/api/admin/orders/${id}/status`, { token: ctx.tokens.admin, body: { status: "shipping" } });
+      return { actual: `status ${r.status}`, pass: r.status >= 400, reason: r.status >= 400 ? "" : "exited a final state" };
+    } },
+  { id: "FR10-ADM-03", feature: "FR-10", kind: "auto",
+    expected: "Accept — pending → confirmed is a legal admin transition (FR-10) [control]",
+    async run(ctx) {
+      const id = await makeOrder(ctx, "pending");
+      const r = await api("PUT", `/api/admin/orders/${id}/status`, { token: ctx.tokens.admin, body: { status: "confirmed" } });
+      return { actual: `status ${r.status}`, pass: r.status === 200, reason: r.status === 200 ? "" : "legal transition rejected" };
+    } },
+  { id: "FR10-SEC-01", feature: "FR-10", kind: "auto",
+    expected: "Reject 403 — a non-admin must not change order status (FR-12/SEC-03: PUT /api/admin/orders/:id/status)",
+    async run(ctx) {
+      const id = await makeOrder(ctx, "pending");
+      const r = await api("PUT", `/api/admin/orders/${id}/status`, { token: ctx.tokens.user, body: { status: "confirmed" } });
+      return { actual: `status ${r.status}`, pass: r.status === 403, reason: r.status === 403 ? "" : `non-admin drove order status to confirmed (got ${r.status})` };
+    } },
+  { id: "FR14-INTEG-01", feature: "FR-14", kind: "auto",
+    expected: "Deleting a category must not leave products referencing a non-existent category (FR-15: product category must be from the available list)",
+    async run(ctx) {
+      const c = await api("POST", "/api/categories", { token: ctx.tokens.admin, body: { name: "Integ " + Math.random().toString(36).slice(2, 6) } });
+      const cid = c.body?.id;
+      const p = await api("POST", "/api/products", { token: ctx.tokens.admin, body: { name: "IntegProd", price: 1000, description: "", imageUrl: "", category_id: cid } });
+      const pid = p.body?.id;
+      await api("DELETE", `/api/categories/${cid}`, { token: ctx.tokens.admin });
+      const cats = await api("GET", "/api/categories");
+      const catIds = new Set((cats.body ?? []).map((x) => x.id));
+      const prods = await api("GET", "/api/products");
+      const orphan = (prods.body ?? []).find((x) => x.id === pid && !catIds.has(x.category_id));
+      const pass = !orphan;
+      return { actual: orphan ? `product ${pid} orphaned (category_id ${orphan.category_id} no longer exists)` : "no orphan",
+        pass, reason: pass ? "" : "category delete orphaned a product" };
+    } },
+];
+
+export const cases = [...FR05, ...FR09, ...FR14, ...FR10, ...SUPP];

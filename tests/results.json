@@ -1,0 +1,1122 @@
+{
+  "when": "2026-07-03T23:48:41.444Z",
+  "base": "http://localhost:3000",
+  "results": [
+    {
+      "id": "FR05-DT-01",
+      "feature": "FR-05",
+      "kind": "manual",
+      "expected": "Product in grid; image alt; price 30.000.000 ₫; exactly one <h1> (R1/R2/R3/R8)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Web UI: search `iPhone 15 Pro Max`. Verify grid item, non-empty img alt, ₫ thousands format, and exactly one <h1> (DevTools → Elements)."
+    },
+    {
+      "id": "FR05-DT-02",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Returns MacBook Pro M3 (R4)",
+      "actual": "1 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-DT-03",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "All names containing 'Pro' (R4)",
+      "actual": "3 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-DT-04",
+      "feature": "FR-05",
+      "kind": "probe",
+      "expected": "spec-undefined — case-insensitivity of search",
+      "actual": "1 rows",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR05-DT-05",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Returns Keychron (R4)",
+      "actual": "1 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-DT-06",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Empty ⇒ all 5 products (R1/R4)",
+      "actual": "5 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-DT-07",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "0 results + empty state (R7)",
+      "actual": "0 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-DT-08",
+      "feature": "FR-05",
+      "kind": "manual",
+      "expected": "Loading indicator visible during fetch (R6)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Throttle network (DevTools) and search; confirm a loading state shows."
+    },
+    {
+      "id": "FR05-DT-09",
+      "feature": "FR-05",
+      "kind": "manual",
+      "expected": "`<b>hi</b>` shown as literal text, not bold (R5)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Search `<b>hi</b>`; confirm the term is not rendered as bold HTML."
+    },
+    {
+      "id": "FR05-DT-10",
+      "feature": "FR-05",
+      "kind": "manual",
+      "expected": "No script executes; term escaped (R5/SEC-04)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Search `<script>alert(1)</script>`; confirm no alert fires and text is escaped."
+    },
+    {
+      "id": "FR05-DT-11",
+      "feature": "FR-05",
+      "kind": "manual",
+      "expected": "No JS executes from img onerror (R5)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Search `<img src=x onerror=alert(1)>`; confirm no alert."
+    },
+    {
+      "id": "FR05-DT-12",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Literal → 0 results; must NOT return all/other rows (R4/SEC-05)",
+      "actual": "5 rows",
+      "status": "FAIL",
+      "reason": "leaked rows"
+    },
+    {
+      "id": "FR05-DT-13",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Literal → 0 results; no 500 (R4/SEC-05)",
+      "actual": "1 rows",
+      "status": "FAIL",
+      "reason": "leaked rows"
+    },
+    {
+      "id": "FR05-DT-14",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Table intact; injection is a safe literal (SEC-05)",
+      "actual": "5 rows after",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-DT-15",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Graceful: 0 results, no crash (R4/R7)",
+      "actual": "0 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-DT-16",
+      "feature": "FR-05",
+      "kind": "manual",
+      "expected": "Empty catalog ⇒ empty-state, not a broken grid (R1/R7)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Delete all products (admin), open the listing; confirm a friendly empty state."
+    },
+    {
+      "id": "FR05-DT-17",
+      "feature": "FR-05",
+      "kind": "manual",
+      "expected": "Empty-state message must not echo the raw term as HTML (R5/R7)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Search `<script>alert(1)</script>`; read the 'no results' message; confirm no script and escaped text."
+    },
+    {
+      "id": "FR05-DT-18",
+      "feature": "FR-05",
+      "kind": "probe",
+      "expected": "spec-undefined — accent-folding × case (`ban phim`)",
+      "actual": "0 rows",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR05-BVA-01",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Length 0 ⇒ all 5 (R1)",
+      "actual": "5 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-BVA-02",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Products containing 'i' (R4)",
+      "actual": "2 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-BVA-03",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Narrows toward iPhone (R4)",
+      "actual": "1 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-BVA-04",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "255-char non-match ⇒ 0 results (R4/R7)",
+      "actual": "0 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-BVA-05",
+      "feature": "FR-05",
+      "kind": "probe",
+      "expected": "spec-undefined — 256-char (any cap?)",
+      "actual": "status 200, 0 rows",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR05-BVA-06",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "10 000-char ⇒ no crash, 0 results (R4/R7)",
+      "actual": "0 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-BVA-07",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "0-result side of the empty-state trigger (R7)",
+      "actual": "0 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-BVA-08",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Exactly 1 result (R1/R4)",
+      "actual": "1 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-BVA-09",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "UB=5 ⇒ all products (R1)",
+      "actual": "5 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-BVA-10",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "`%` is literal ⇒ 0 results; must NOT return all products (R4/R7)",
+      "actual": "5 rows",
+      "status": "FAIL",
+      "reason": "leaked rows"
+    },
+    {
+      "id": "FR05-BVA-11",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "`_` literal ⇒ 0 results; must not match MacBook (R4)",
+      "actual": "1 rows",
+      "status": "FAIL",
+      "reason": "leaked rows"
+    },
+    {
+      "id": "FR05-BVA-12",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "`%` literal ⇒ 0 results; must not match MacBook Pro (R4)",
+      "actual": "1 rows",
+      "status": "FAIL",
+      "reason": "leaked rows"
+    },
+    {
+      "id": "FR05-BVA-13",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Prefix match (R4)",
+      "actual": "1 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-BVA-14",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Suffix match — Samsung … S24 Ultra (R4)",
+      "actual": "1 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR05-BVA-15",
+      "feature": "FR-05",
+      "kind": "auto",
+      "expected": "Off-by-one ⇒ 0 results (R4/R7)",
+      "actual": "0 rows",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-01",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Apply; discount 30,000; final 270,000 (SAVE10 percent)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ để áp dụng mã này\"}",
+      "status": "FAIL",
+      "reason": "differs from spec"
+    },
+    {
+      "id": "FR09-DT-02",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Apply; discount 50,000; final 450,000 (BIGBUY fixed)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 500,000 ₫ để áp dụng mã này\"}",
+      "status": "FAIL",
+      "reason": "differs from spec"
+    },
+    {
+      "id": "FR09-DT-03",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Apply — usage 1 < max 2 (C5)",
+      "actual": "status 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-04",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — code does not exist (C1)",
+      "actual": "status 404 {\"error\":\"Mã giảm giá không tồn tại hoặc đã bị vô hiệu hóa\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-05",
+      "feature": "FR-09",
+      "kind": "manual",
+      "expected": "Reject — inactive coupon (C1 is_active=1)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Seed a coupon with is_active=0 in the DB, then apply it; expect rejection. (No API to set is_active.)"
+    },
+    {
+      "id": "FR09-DT-06",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — empty code ('Vui lòng nhập mã')",
+      "actual": "status 400 {\"error\":\"Vui lòng nhập mã giảm giá\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-07",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — below min 300,000 (C3)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ để áp dụng mã này\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-08",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — expired (C2)",
+      "actual": "status 400 {\"error\":\"Mã giảm giá đã hết hạn\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-09",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — must be logged in (C4)",
+      "actual": "status 200 {\"success\":true,\"coupon_id\":1,\"discount_amount\":-4500000,\"final_amount\":5000000,\"message\":\"Áp dụng thành công! Giảm 10%\"}",
+      "status": "FAIL",
+      "reason": "coupon wrongly accepted"
+    },
+    {
+      "id": "FR09-DT-10",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — uses = max (C5)",
+      "actual": "status 400",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-11",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — below min / invalid amount (C3)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ để áp dụng mã này\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-12",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — invalid/below min (spec-undefined on negatives)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ để áp dụng mã này\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-13",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject safely; no SQL leak (C1/SEC-05)",
+      "actual": "status 404 {\"error\":\"Mã giảm giá không tồn tại hoặc đã bị vô hiệu hóa\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-14",
+      "feature": "FR-09",
+      "kind": "probe",
+      "expected": "spec-undefined — coupon code case-sensitivity (`save10`)",
+      "actual": "status 404 {\"error\":\"Mã giảm giá không tồn tại hoặc đã bị vô hiệu hóa\"}",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR09-DT-15",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — fails C2 and C3 (expired + below min)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 100,000 ₫ để áp dụng mã này\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-16",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — anonymous must not bypass usage cap via missing user_id (C4)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ để áp dụng mã này\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-DT-17",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "discount 100,000; final 900,000 (percent 10% of 1,000,000)",
+      "actual": "status 200 {\"success\":true,\"coupon_id\":1,\"discount_amount\":-9000000,\"final_amount\":10000000,\"message\":\"Áp dụng thành công! Giảm 10%\"}",
+      "status": "FAIL",
+      "reason": "differs from spec"
+    },
+    {
+      "id": "FR09-BVA-01",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — below min (LB−1)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ để áp dụng mã này\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-02",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "APPLY at exactly min; discount 30,000; final 270,000 (C3 '>=', LB)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ để áp dụng mã này\"}",
+      "status": "FAIL",
+      "reason": "differs from spec"
+    },
+    {
+      "id": "FR09-BVA-03",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Apply just above min; real discount (LB+1)",
+      "actual": "status 200 {\"success\":true,\"coupon_id\":1,\"discount_amount\":-2700009,\"final_amount\":3000010,\"message\":\"Áp dụng thành công! Giảm 10%\"}",
+      "status": "FAIL",
+      "reason": "no valid discount applied"
+    },
+    {
+      "id": "FR09-BVA-04",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — below min (BIGBUY LB−1)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 500,000 ₫ để áp dụng mã này\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-05",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "APPLY at min; discount 50,000; final 450,000 (BIGBUY LB)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 500,000 ₫ để áp dụng mã này\"}",
+      "status": "FAIL",
+      "reason": "differs from spec"
+    },
+    {
+      "id": "FR09-BVA-06",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Apply just above min (BIGBUY LB+1)",
+      "actual": "status 200 {\"success\":true,\"coupon_id\":2,\"discount_amount\":50000,\"final_amount\":450001,\"message\":\"Áp dụng thành công! Giảm 50,000 ₫\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-07",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — below min (VIP100 LB−1)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ để áp dụng mã này\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-08",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "APPLY at min; discount 100,000; final 200,000 (VIP100 LB)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ để áp dụng mã này\"}",
+      "status": "FAIL",
+      "reason": "differs from spec"
+    },
+    {
+      "id": "FR09-BVA-09",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Apply just above min (VIP100 LB+1)",
+      "actual": "status 200 {\"success\":true,\"coupon_id\":3,\"discount_amount\":100000,\"final_amount\":200001,\"message\":\"Áp dụng thành công! Giảm 100,000 ₫\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-10",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Apply — usage 0 < max 1 (SAVE10, above min)",
+      "actual": "status 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-11",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — uses = max 1 (C5 '<' edge)",
+      "actual": "status 400",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-12",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — uses > max 1",
+      "actual": "status 400",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-13",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Apply — uses 1 < max 2 (UB−1)",
+      "actual": "status 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-14",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — uses = max 2 (UB edge)",
+      "actual": "status 400",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-15",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — uses 3 > max 2 (UB+1)",
+      "actual": "status 400",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-16",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — expired yesterday (C2, day-after cutoff)",
+      "actual": "status 400",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-17",
+      "feature": "FR-09",
+      "kind": "probe",
+      "expected": "spec-undefined — coupon expiring today (same-day time-of-day)",
+      "actual": "status 400 {\"error\":\"Mã giảm giá đã hết hạn\"}",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR09-BVA-18",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Apply — expires tomorrow, still valid (C2, day-before)",
+      "actual": "status 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-19",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — far-past expiry (EXPIRED 2020, above min)",
+      "actual": "status 400 {\"error\":\"Mã giảm giá đã hết hạn\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-20",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Reject — total 0 (below min/invalid)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ để áp dụng mã này\"}",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR09-BVA-21",
+      "feature": "FR-09",
+      "kind": "probe",
+      "expected": "spec-undefined — negative total (−1)",
+      "actual": "status 400 {\"error\":\"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ để áp dụng mã này\"}",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR09-BVA-22",
+      "feature": "FR-09",
+      "kind": "auto",
+      "expected": "Apply; discount = 999,999,999 (10% of 9,999,999,999) — probe overflow/formula",
+      "actual": "status 200 {\"success\":true,\"coupon_id\":1,\"discount_amount\":-89999999991,\"final_amount\":99999999990,\"message\":\"Áp dụng thành công! Giảm 10%\"}",
+      "status": "FAIL",
+      "reason": "differs from spec"
+    },
+    {
+      "id": "FR14-DT-01",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Created; appears in GET list (FR-14 Add+View)",
+      "actual": "create 200; in list true",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR14-DT-02",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Deleted; gone from list (FR-14 Delete)",
+      "actual": "delete 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR14-DT-03",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Reject — name required, not empty (FR-14)",
+      "actual": "status 200",
+      "status": "FAIL",
+      "reason": "expected reject, got 200"
+    },
+    {
+      "id": "FR14-DT-04",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Reject — whitespace-only = empty (FR-14)",
+      "actual": "status 200",
+      "status": "FAIL",
+      "reason": "expected reject, got 200"
+    },
+    {
+      "id": "FR14-DT-05",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Reject 403 — non-admin cannot create (FR-12/SEC-03)",
+      "actual": "status 200",
+      "status": "FAIL",
+      "reason": "expected 403, got 200"
+    },
+    {
+      "id": "FR14-DT-06",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Reject 401 — token required (SEC-02/FR-12)",
+      "actual": "status 401",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR14-DT-07",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Reject 403 — non-admin delete (SEC-03)",
+      "actual": "status 200",
+      "status": "FAIL",
+      "reason": "got 200"
+    },
+    {
+      "id": "FR14-DT-08",
+      "feature": "FR-14",
+      "kind": "probe",
+      "expected": "spec: reject/no-op on non-existent id 9999 (no-op vs error undefined)",
+      "actual": "status 200 {\"message\":\"Category deleted\"}",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR14-DT-09",
+      "feature": "FR-14",
+      "kind": "manual",
+      "expected": "Category name with <script> escaped on display, not executed (SEC-04)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Admin create name `<script>alert(1)</script>`; view anywhere the category renders; confirm escaped, no alert."
+    },
+    {
+      "id": "FR14-DT-10",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Categories table intact after SQL-meta name (SEC-05)",
+      "actual": "7 categories",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR14-DT-11",
+      "feature": "FR-14",
+      "kind": "probe",
+      "expected": "spec-undefined — duplicate name 'Laptop'",
+      "actual": "status 200",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR14-DT-12",
+      "feature": "FR-14",
+      "kind": "probe",
+      "expected": "spec-undefined — delete category id=1 that has products (integrity)",
+      "actual": "status 200",
+      "status": "PROBE",
+      "reason": "record only; check orphaned products"
+    },
+    {
+      "id": "FR14-DT-13",
+      "feature": "FR-14",
+      "kind": "probe",
+      "expected": "spec-undefined — numeric-only name '12345'",
+      "actual": "status 200",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR14-DT-14",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Reject 403 — auth checked before validation (empty name × non-admin)",
+      "actual": "status 200",
+      "status": "FAIL",
+      "reason": "expected 403, got 200"
+    },
+    {
+      "id": "FR14-BVA-01",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Reject — length 0 empty (FR-14)",
+      "actual": "status 200",
+      "status": "FAIL",
+      "reason": "expected reject, got 200"
+    },
+    {
+      "id": "FR14-BVA-02",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Accept — length 1 non-empty (FR-14)",
+      "actual": "status 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR14-BVA-03",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Accept — length 2 (FR-14)",
+      "actual": "status 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR14-BVA-04",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Reject — single space trims to empty (FR-14)",
+      "actual": "status 200",
+      "status": "FAIL",
+      "reason": "expected reject, got 200"
+    },
+    {
+      "id": "FR14-BVA-05",
+      "feature": "FR-14",
+      "kind": "probe",
+      "expected": "spec-undefined — 255-char name (no max stated)",
+      "actual": "status 200",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR14-BVA-06",
+      "feature": "FR-14",
+      "kind": "probe",
+      "expected": "spec-undefined — 256-char name",
+      "actual": "status 200",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR14-BVA-07",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Graceful, no crash on 10 000-char name",
+      "actual": "status 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR14-BVA-08",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Delete existing min id succeeds (FR-14)",
+      "actual": "status 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR14-BVA-09",
+      "feature": "FR-14",
+      "kind": "probe",
+      "expected": "spec: id 0 (LB−1) reject/no-op",
+      "actual": "status 200",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR14-BVA-10",
+      "feature": "FR-14",
+      "kind": "probe",
+      "expected": "spec: id −1 (negative) reject/no-op",
+      "actual": "status 200",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR14-BVA-11",
+      "feature": "FR-14",
+      "kind": "auto",
+      "expected": "Delete existing max id succeeds (FR-14)",
+      "actual": "status 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR14-BVA-12",
+      "feature": "FR-14",
+      "kind": "probe",
+      "expected": "spec: id just past max (UB+1) not found/no-op",
+      "actual": "status 200",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR14-BVA-13",
+      "feature": "FR-14",
+      "kind": "probe",
+      "expected": "spec: id far above range no-op",
+      "actual": "status 200",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR14-BVA-14",
+      "feature": "FR-14",
+      "kind": "probe",
+      "expected": "spec-undefined — non-numeric id 'abc'",
+      "actual": "status 200",
+      "status": "PROBE",
+      "reason": "record only"
+    },
+    {
+      "id": "FR10-DT-01",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "pending: red 'Hủy đơn' shown; tap → success → 'Đã hủy' (FR-10/20/21)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: on a pending order, confirm red cancel button, tap it, confirm success + label 'Đã hủy'."
+    },
+    {
+      "id": "FR10-DT-02",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "confirmed: cancel button shown; tap → canceled (FR-10/20)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: drive an order to confirmed (admin), confirm button shown, tap, confirm canceled."
+    },
+    {
+      "id": "FR10-DT-03",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "Empty history: 'Bạn chưa có đơn hàng nào.' (FR-24)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: log in as a user with no orders; confirm the empty-state message."
+    },
+    {
+      "id": "FR10-DT-04",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "shipping: NO cancel button (L1, FR-20)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: order in shipping; confirm 'Hủy đơn' button is NOT rendered."
+    },
+    {
+      "id": "FR10-DT-05",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "delivered: NO cancel button (L1, final)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: order delivered; confirm no cancel button."
+    },
+    {
+      "id": "FR10-DT-06",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "canceled: NO cancel button (L1, final)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: order canceled; confirm no cancel button."
+    },
+    {
+      "id": "FR10-DT-07",
+      "feature": "FR-10",
+      "kind": "auto",
+      "expected": "Reject 4xx — user cannot cancel a shipping order via API (L2, FR-10)",
+      "actual": "status 200",
+      "status": "FAIL",
+      "reason": "illegal cancel accepted"
+    },
+    {
+      "id": "FR10-DT-08",
+      "feature": "FR-10",
+      "kind": "auto",
+      "expected": "Reject — cancel delivered (L2, final)",
+      "actual": "status 400",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR10-DT-09",
+      "feature": "FR-10",
+      "kind": "auto",
+      "expected": "Reject — cancel canceled (L2, final)",
+      "actual": "status 400",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR10-DT-10",
+      "feature": "FR-10",
+      "kind": "auto",
+      "expected": "Reject — cannot cancel another user's order (FR-11)",
+      "actual": "status 404",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR10-DT-11",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "L1↔L2 consistency at shipping (button hidden AND API rejects)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Compare FR10-DT-04 (button hidden) with FR10-DT-07 (API reject). Both must hold; hidden button + API accept ⇒ UI masks a server defect."
+    },
+    {
+      "id": "FR10-DT-12",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "VN status labels for all 5 states (FR-21)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: view one order per state; confirm each shows the correct Vietnamese label, not a raw enum."
+    },
+    {
+      "id": "FR10-DT-13",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "Offline cancel: error Alert, order unchanged, no crash",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: with backend unreachable, tap 'Hủy đơn'; confirm error Alert and no crash."
+    },
+    {
+      "id": "FR10-DT-14",
+      "feature": "FR-10",
+      "kind": "probe",
+      "expected": "spec-ambiguous — any device path to cancel a shipping order?",
+      "actual": "status 200",
+      "status": "PROBE",
+      "reason": "record: mobile has no admin path; report diagram/text conflict"
+    },
+    {
+      "id": "FR10-BVA-01",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "pending (LB−1): cancel button shown (L1)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: pending order → button shown."
+    },
+    {
+      "id": "FR10-BVA-02",
+      "feature": "FR-10",
+      "kind": "auto",
+      "expected": "pending (LB−1): PUT /cancel → 200 canceled (L2)",
+      "actual": "status 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR10-BVA-03",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "confirmed (LB): cancel button shown (L1)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: confirmed order → button shown."
+    },
+    {
+      "id": "FR10-BVA-04",
+      "feature": "FR-10",
+      "kind": "auto",
+      "expected": "confirmed (LB): PUT /cancel → 200 canceled (L2)",
+      "actual": "status 200",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR10-BVA-05",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "shipping (LB+1): cancel button hidden (L1)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: shipping order → button hidden."
+    },
+    {
+      "id": "FR10-BVA-06",
+      "feature": "FR-10",
+      "kind": "auto",
+      "expected": "shipping (LB+1): PUT /cancel → reject 4xx (L2, KEY — masked bug)",
+      "actual": "status 200",
+      "status": "FAIL",
+      "reason": "illegal cancel accepted"
+    },
+    {
+      "id": "FR10-BVA-07",
+      "feature": "FR-10",
+      "kind": "manual",
+      "expected": "delivered (LB+2): cancel button hidden (L1, final)",
+      "actual": "(manual)",
+      "status": "MANUAL",
+      "reason": "Mobile: delivered order → button hidden."
+    },
+    {
+      "id": "FR10-BVA-08",
+      "feature": "FR-10",
+      "kind": "auto",
+      "expected": "delivered (LB+2): PUT /cancel → reject (L2, final)",
+      "actual": "status 400",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR10-BVA-09",
+      "feature": "FR-10",
+      "kind": "auto",
+      "expected": "delivered terminal: PUT /cancel → reject (B2 on-edge)",
+      "actual": "status 400",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "id": "FR10-BVA-10",
+      "feature": "FR-10",
+      "kind": "auto",
+      "expected": "canceled terminal: PUT /cancel → reject (B2 on-edge)",
+      "actual": "status 400",
+      "status": "PASS",
+      "reason": ""
+    }
+  ]
+}

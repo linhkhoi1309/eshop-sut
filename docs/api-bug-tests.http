@@ -1,0 +1,272 @@
+###############################################################################
+# EShop — API bug reproductions  (docs/bug-report.md)
+#
+# Tool: VS Code "REST Client" extension (humao.rest-client) or a compatible
+#       .http runner. Click the "Send Request" CodeLens above each request.
+#
+# HOW TO USE
+#   1. Start the backend:  cd backend && node server.js   (reseeds DB on boot)
+#   2. Run "Login as USER" and "Login as ADMIN" ONCE (top of file) — their
+#      responses feed the {{...}} token/id variables used below.
+#   3. Run each bug's request(s) top-to-bottom. Multi-step bugs (BUG-07/08/09/13)
+#      chain named requests, so run that section's requests in order.
+#
+# A bug is confirmed when the ACTUAL status/body differs from EXPECTED (noted
+# per request). Oracle = README.md.
+#
+# NOT included (UI-render bugs, not HTTP-observable): BUG-10 (XSS), BUG-11/14/
+# 15/16/17 (FR-05 listing GUI) — verify those in the browser.
+###############################################################################
+
+@baseUrl = http://localhost:3000
+@userEmail = test@eshop.com
+@userPassword = Test1234!
+@adminEmail = admin@eshop.com
+@adminPassword = Admin123!
+
+### Login as USER  (run first)
+# @name userLogin
+POST {{baseUrl}}/api/login
+Content-Type: application/json
+
+{ "email": "{{userEmail}}", "password": "{{userPassword}}" }
+
+### Login as ADMIN  (run first)
+# @name adminLogin
+POST {{baseUrl}}/api/login
+Content-Type: application/json
+
+{ "email": "{{adminEmail}}", "password": "{{adminPassword}}" }
+
+# NOTE: run BOTH login requests above (▶ Send Request) before running anything
+# below. The requests below reference those responses inline
+# ({{userLogin.response.body.$.token}} etc.); if you see "Request 'userLogin'
+# has not been sent", just send the two logins first.
+
+
+###############################################################################
+# BUG-04 [Critical, FR-05] SQL injection & LIKE-wildcard leak in product search
+# EXPECT: each is a literal name search -> 0 results (empty array [])
+# ACTUAL: %/injection return ALL products; Mac_ook matches MacBook (wildcard)
+###############################################################################
+
+### BUG-04a — literal '%' should match nothing (ACTUAL: all 5 products)
+GET {{baseUrl}}/api/products?search=%25
+
+### BUG-04b — SQL tautology should be a literal (ACTUAL: all 5 products)
+GET {{baseUrl}}/api/products?search=' OR '1'='1
+
+### BUG-04c — '_' should be a literal (ACTUAL: matches "MacBook Pro M3")
+GET {{baseUrl}}/api/products?search=Mac_ook
+
+
+###############################################################################
+# BUG-01 [High, FR-09] Coupon rejected when total == min_order_amount (> vs >=)
+# EXPECT: 200 apply; discount 30,000; final 270,000
+# ACTUAL: 400 "Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ ..."
+###############################################################################
+
+### BUG-01 — SAVE10 at exactly the 300,000 minimum
+POST {{baseUrl}}/api/apply-coupon
+Content-Type: application/json
+
+{ "code": "SAVE10", "total_amount": 300000, "user_id": {{userLogin.response.body.$.user.id}} }
+
+
+###############################################################################
+# BUG-02 [High, FR-09] Percent formula wrong -> negative discount
+# EXPECT: discount 100,000; final 900,000  (10% of 1,000,000)
+# ACTUAL: 200 {"discount_amount":-9000000,"final_amount":10000000}
+###############################################################################
+
+### BUG-02 — SAVE10 (percent 10) on 1,000,000
+POST {{baseUrl}}/api/apply-coupon
+Content-Type: application/json
+
+{ "code": "SAVE10", "total_amount": 1000000, "user_id": {{userLogin.response.body.$.user.id}} }
+
+
+###############################################################################
+# BUG-03 [High, FR-09] Coupon applies without login (C4 not enforced)
+# EXPECT: reject — a valid JWT/login is required
+# ACTUAL: 200 {"success":true,...}  (no token, no user_id)
+###############################################################################
+
+### BUG-03 — anonymous apply (no Authorization, no user_id)
+POST {{baseUrl}}/api/apply-coupon
+Content-Type: application/json
+
+{ "code": "SAVE10", "total_amount": 500000 }
+
+
+###############################################################################
+# BUG-12 [Low, FR-09] Coupon code lookup is case-sensitive (save10 != SAVE10)
+# EXPECT: applies (same coupon), or at least consistent with search
+# ACTUAL: 404 "Mã giảm giá không tồn tại..."  (WHERE code = ? is BINARY)
+###############################################################################
+
+### BUG-12 — lowercase code
+POST {{baseUrl}}/api/apply-coupon
+Content-Type: application/json
+
+{ "code": "save10", "total_amount": 500000, "user_id": {{userLogin.response.body.$.user.id}} }
+
+
+###############################################################################
+# BUG-05 [Medium, FR-14] Empty / whitespace category name accepted
+# EXPECT: reject — name required, non-empty
+# ACTUAL: 200 "Category created"
+###############################################################################
+
+### BUG-05a — empty name (ACTUAL: 200 created)
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "name": "" }
+
+### BUG-05b — whitespace-only name (ACTUAL: 200 created)
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "name": "   " }
+
+
+###############################################################################
+# BUG-06 [High, FR-14] Category write endpoints accept a NON-admin token
+# EXPECT: 403 Forbidden (non-admin)
+# ACTUAL: 200 — authenticateToken never checks role
+###############################################################################
+
+### BUG-06a — non-admin CREATE category (ACTUAL: 200)
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{userLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "name": "Hacked-by-user" }
+
+### BUG-06b — non-admin DELETE category #2 (ACTUAL: 200)
+DELETE {{baseUrl}}/api/categories/2
+Authorization: Bearer {{userLogin.response.body.$.token}}
+
+
+###############################################################################
+# BUG-13 [High, FR-10] Non-admin can change order status (missing role check)
+# Run 13a then 13b.
+# EXPECT (13b): 403 Forbidden
+# ACTUAL: 200 "Order status updated" — non-admin drives the state machine
+###############################################################################
+
+### BUG-13a — create a pending order as the user
+# @name checkout13
+POST {{baseUrl}}/api/checkout
+Authorization: Bearer {{userLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "total_amount": 100000, "shipping_address": "13 Test St" }
+
+### BUG-13b — user (non-admin) drives admin status endpoint (ACTUAL: 200)
+PUT {{baseUrl}}/api/admin/orders/{{checkout13.response.body.$.orderId}}/status
+Authorization: Bearer {{userLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "status": "confirmed" }
+
+
+###############################################################################
+# BUG-07 [High, FR-10] Server lets a USER cancel a `shipping` order
+# Run 07a -> 07b -> 07c -> 07d in order.
+# EXPECT (07d): reject 4xx — user cannot cancel once shipping
+# ACTUAL: 200 — cancel succeeds
+###############################################################################
+
+### BUG-07a — user creates an order
+# @name checkout07
+POST {{baseUrl}}/api/checkout
+Authorization: Bearer {{userLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "total_amount": 100000, "shipping_address": "7 Test St" }
+
+### BUG-07b — admin: pending -> confirmed
+PUT {{baseUrl}}/api/admin/orders/{{checkout07.response.body.$.orderId}}/status
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "status": "confirmed" }
+
+### BUG-07c — admin: confirmed -> shipping
+PUT {{baseUrl}}/api/admin/orders/{{checkout07.response.body.$.orderId}}/status
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "status": "shipping" }
+
+### BUG-07d — USER cancels the shipping order (ACTUAL: 200)
+PUT {{baseUrl}}/api/orders/{{checkout07.response.body.$.orderId}}/cancel
+Authorization: Bearer {{userLogin.response.body.$.token}}
+
+
+###############################################################################
+# BUG-08 [High, FR-10] Admin can move a `canceled` order to `delivered`
+# Run 08a -> 08b -> 08c in order.
+# EXPECT (08c): reject 4xx — `canceled` is a final state
+# ACTUAL: 200 "Order status updated" — terminal order resurrected
+###############################################################################
+
+### BUG-08a — user creates an order
+# @name checkout08
+POST {{baseUrl}}/api/checkout
+Authorization: Bearer {{userLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "total_amount": 100000, "shipping_address": "8 Test St" }
+
+### BUG-08b — admin: pending -> canceled
+PUT {{baseUrl}}/api/admin/orders/{{checkout08.response.body.$.orderId}}/status
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "status": "canceled" }
+
+### BUG-08c — admin: canceled -> delivered (ACTUAL: 200, should be rejected)
+PUT {{baseUrl}}/api/admin/orders/{{checkout08.response.body.$.orderId}}/status
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "status": "delivered" }
+
+
+###############################################################################
+# BUG-09 [Medium, FR-14/FR-15] Deleting a category orphans its products
+# Run 09a -> 09b -> 09c -> 09d -> 09e in order.
+# EXPECT: delete prevented, or no product left pointing at a missing category
+# ACTUAL: delete 200; product still has category_id of the deleted category
+###############################################################################
+
+### BUG-09a — create a throwaway category
+# @name cat09
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "name": "TempCat-09" }
+
+### BUG-09b — create a product in that category
+# @name prod09
+POST {{baseUrl}}/api/products
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "name": "Orphan-Test", "price": 1000, "description": "", "imageUrl": "", "category_id": {{cat09.response.body.$.id}} }
+
+### BUG-09c — delete the category (ACTUAL: 200 "Category deleted")
+DELETE {{baseUrl}}/api/categories/{{cat09.response.body.$.id}}
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+
+### BUG-09d — category is now gone (should NOT list cat09's id)
+GET {{baseUrl}}/api/categories
+
+### BUG-09e — product still references the deleted category_id  = orphaned
+GET {{baseUrl}}/api/products/{{prod09.response.body.$.id}}
