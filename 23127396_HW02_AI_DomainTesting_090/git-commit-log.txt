@@ -1,0 +1,101 @@
+commit 42fa2eab691a94892819ea6c3a8b2e8c90d55c22
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Mon Jul 6 15:02:21 2026 +0700
+
+    feat: update AI critique
+
+commit bcb876b76b54f1af7be5dd6c608371e4ab43a0e9
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Mon Jul 6 14:54:31 2026 +0700
+
+    feat: update AI usage log
+
+commit 67ace4b4bc7a3420677a7ea312f7a8f1485c197e
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Mon Jul 6 14:45:03 2026 +0700
+
+    feat: add necessary files
+
+commit dabeea20544bde53694f3dd4b722e004f00139c7
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Mon Jul 6 13:28:35 2026 +0700
+
+    feat: Add bug 17 evidence
+
+commit 6cdd61872bbb7d0d1891cd5618e3beb21d2fa7f9
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Sat Jul 4 03:49:45 2026 +0700
+
+    feat: Add test runner
+
+commit 59076b9a12c55e4c9c45295325c3bb59153c06af
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Sat Jul 4 03:49:28 2026 +0700
+
+    feat: Add generated test scripts
+
+commit 83d24511d7c591fd8ced441cce611d1ff4d7de3d
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Sat Jul 4 03:36:38 2026 +0700
+
+    fix: fix FR-10 for mobile version
+
+commit 5201d0b01acc0aab78cb9d403ed57257fa4b7dd8
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Sat Jul 4 03:09:58 2026 +0700
+
+    feat: Add rule for retrieving AI log
+
+commit 2702df1513367e82cb56cd21e22f9ab9166c5433
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Sat Jul 4 03:09:09 2026 +0700
+
+    feat: Add skills for generating test scripts and running them
+
+commit 14a7d7add999d5023b711f58a33b71ce981f535a
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Sat Jul 4 02:25:52 2026 +0700
+
+    feat: scaffold the main report
+
+commit ae464be12ca4b994a57ac9a3a54303651c54d014
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Sat Jul 4 02:24:59 2026 +0700
+
+    feat: Add test design for FR-14
+
+commit e36ac9af366eb73b44077180acdbb70dc78707ea
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Sat Jul 4 02:24:46 2026 +0700
+
+    feat: Add test design for FR-10
+
+commit c15c577092805ad20f8d723bf3d6edc942b018a7
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Sat Jul 4 02:24:33 2026 +0700
+
+    feat: Add test design for FR-09
+
+commit 662069e85e3c6b68b90a47a888d88fa5721e7be5
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Sat Jul 4 02:24:18 2026 +0700
+
+    feat: Add test design for FR-05
+
+commit e6a63cef606788d5ccab1928564fc82f94fa2ba3
+Author: Lương Linh Khôi <luongkhoi3456@gmail.com>
+Date:   Sat Jul 4 02:23:57 2026 +0700
+
+    feat: Add SKILL.md for agent
+
+commit 85af3ba875c88283615e22cb108f13e2fccaf0e9
+Author: ttbhanh-hcmus <ttbhanh@hcmus.edu.vn>
+Date:   Fri May 15 08:30:35 2026 +0700
+
+    first upload
+
+commit 2f9bf2bab45855abf211377a5d5eba10031649e3
+Author: Hanh Tran <ttbhanh@fit.hcmus.edu.vn>
+Date:   Fri May 15 08:27:44 2026 +0700
+
+    Initial commit

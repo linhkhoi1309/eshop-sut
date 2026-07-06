@@ -30,8 +30,8 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 
 > **Environment (all bugs):** backend `http://localhost:3000`, seed DB (fresh on boot).
 > Accounts: admin `admin@eshop.com/Admin123!`, user `test@eshop.com/Test1234!` (id 2).
-> **Screenshots:** attach the referenced `docs/evidence/bug-0X.png` to each GitHub issue
-> (drag into the web issue, or commit the PNG and keep the relative link).
+> **Screenshots:** each bug's evidence image is embedded in its section below from
+> `evidence/bug-0X.png` (the same screenshots are attached to the corresponding GitHub issues).
 
 ---
 
@@ -51,7 +51,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 - **Actual:** `%` → **all 5 products**; `' OR '1'='1` → **all 5**; `Mac_ook` → **MacBook Pro M3**
   (the `_` acted as a SQL wildcard). The query is built by string concatenation, so `%`, `_`, `'`
   are interpreted as SQL, not treated as literals — a working SQL-injection / data-leak vector.
-- **Evidence:** `docs/evidence/bug-04.png`
+- **Evidence:** ![BUG-04 evidence](evidence/bug-04.png)
 - **Traceability:** `FR05-DT-12`, `FR05-DT-13`, `FR05-BVA-10`, `FR05-BVA-11`, `FR05-BVA-12`.
 
 ---
@@ -70,7 +70,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 - **Actual:** `400 {"error":"Đơn hàng chưa đủ giá trị tối thiểu 300,000 ₫ …"}`. The check uses
   `total_amount > min_order_amount` (strict `>`) instead of `>=`, so an order *equal* to the
   minimum is wrongly rejected. Reproduced for BIGBUY (500,000) and VIP100 (300,000).
-- **Evidence:** `docs/evidence/bug-01.png`
+- **Evidence:** ![BUG-01 evidence](evidence/bug-01.png)
 - **Traceability:** `FR09-BVA-02`, `FR09-BVA-05`, `FR09-BVA-08`, `FR09-DT-01`, `FR09-DT-02`.
 
 ---
@@ -90,7 +90,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 - **Actual:** `200 {"discount_amount":-9000000,"final_amount":10000000}`. The code computes
   `discount = floor(total × (1 − discount_value))` (treating `discount_value=10` as a fraction),
   producing a large **negative** discount and a final **larger** than the order total.
-- **Evidence:** `docs/evidence/bug-02.png`
+- **Evidence:** ![BUG-02 evidence](evidence/bug-02.png)
 - **Traceability:** `FR09-DT-17`, `FR09-BVA-03`, `FR09-BVA-22`.
 
 ---
@@ -109,7 +109,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 - **Actual:** `200 {"success":true,...}` — the coupon is applied for an anonymous request. The
   endpoint has no auth middleware and treats `user_id` as optional, which also **bypasses the
   per-user usage cap (C5)** since usage cannot be attributed.
-- **Evidence:** `docs/evidence/bug-03.png`
+- **Evidence:** ![BUG-03 evidence](evidence/bug-03.png)
 - **Traceability:** `FR09-DT-09` (and see BUG-01 note re `FR09-DT-16`).
 
 ---
@@ -131,7 +131,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 - **Expected:** `403 Forbidden` (non-admin).
 - **Actual:** `200` for both create and delete. `authenticateToken` verifies the JWT but never
   checks `role`, so any logged-in user can manage categories.
-- **Evidence:** `docs/evidence/bug-06.png`
+- **Evidence:** ![BUG-06 evidence](evidence/bug-06.png)
 - **Traceability:** `FR14-DT-05`, `FR14-DT-07`, `FR14-DT-14`.
 
 ---
@@ -161,7 +161,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 - **Actual:** `200` — the cancel succeeds. `/api/orders/:id/cancel` only rejects `delivered` /
   `canceled`; `shipping` falls through and is cancelled. The mobile UI hides the button (L1), so
   this defect is only visible at the **API layer (L2)**.
-- **Evidence:** `docs/evidence/bug-07.png`
+- **Evidence:** ![BUG-07 evidence](evidence/bug-07.png)
 - **Traceability:** `FR10-DT-07`, `FR10-BVA-06`.
 
 ---
@@ -181,7 +181,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
   ```
 - **Expected:** reject — name required, not empty.
 - **Actual:** `200` — an empty (and whitespace-only) category is created. No non-empty validation.
-- **Evidence:** `docs/evidence/bug-05.png`
+- **Evidence:** ![BUG-05 evidence](evidence/bug-05.png)
 - **Traceability:** `FR14-DT-03`, `FR14-DT-04`, `FR14-BVA-01`, `FR14-BVA-04`.
 
 ---
@@ -196,7 +196,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 - **Actual:** `200 "Order status updated"`. The admin handler explicitly whitelists
   `canceled → delivered` (`if (currentStatus === "canceled" && status === "delivered")
   isValidTransition = true;`), resurrecting a terminal order (can also inflate delivered-revenue).
-- **Evidence:** `docs/evidence/bug-08.png`
+- **Evidence:** ![BUG-08 evidence](evidence/bug-08.png)
 - **Traceability:** `FR10-ADM-01` (controls `FR10-ADM-02`, `FR10-ADM-03` pass).
 - **Note:** this is the admin-side final-state defect the FR-10 *mobile* redesign stopped covering;
   re-added as an admin auto-case.
@@ -214,7 +214,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
   non-existent category.
 - **Actual:** `DELETE` returns `200 "Category deleted"`; the product is **orphaned** (its
   `category_id` no longer exists in `GET /api/categories`). Silent data-integrity corruption.
-- **Evidence:** `docs/evidence/bug-09.png`
+- **Evidence:** ![BUG-09 evidence](evidence/bug-09.png)
 - **Traceability:** `FR14-INTEG-01`.
 
 ---
@@ -229,7 +229,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 - **Actual:** the term is rendered via `dangerouslySetInnerHTML` (`frontend-web/src/pages/Home.jsx:64`).
   `<b>hi</b>` renders **bold**; `<img … onerror=alert(1)>` **executes** → reflected XSS. Same unsafe
   render on the no-results view (`:61-66`) and on server error strings (`:68-72`).
-- **Evidence:** `docs/evidence/bug-10.png`
+- **Evidence:** ![BUG-10 evidence](evidence/bug-10.png)
 - **Traceability:** `FR05-DT-09`, `FR05-DT-10`, `FR05-DT-11`, `FR05-DT-17`. (Verified statically in
   `docs/manual-ui-verification.md`.)
 
@@ -243,32 +243,32 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 - **Spec:** FR-05 R8 / FR-21 — exactly one `<h1>` per page.
 - **Actual:** `document.querySelectorAll('h1').length` → **2** ("Danh sách sản phẩm" `Home.jsx:43`
   + "Hiển thị N sản phẩm" `Home.jsx:110`).
-- **Evidence:** `docs/evidence/bug-11.png` · **Traceability:** `FR05-DT-01` (h1 sub-check).
+- **Evidence:** ![BUG-11 evidence](evidence/bug-11.png) · **Traceability:** `FR05-DT-01` (h1 sub-check).
 
 ## BUG-14 — [FR-05] Product images have empty `alt`
 - **Severity:** Low · **Issue:** [#15](https://github.com/linhkhoi1309/eshop-sut/issues/15)
 - **Spec:** FR-05 R2 / FR-24 — descriptive, non-empty `alt`.
 - **Actual:** `alt=""` on every product image (`Home.jsx:82`).
-- **Evidence:** `docs/evidence/bug-14.png` · **Traceability:** `FR05-DT-01` (alt sub-check).
+- **Evidence:** ![BUG-14 evidence](evidence/bug-14.png) · **Traceability:** `FR05-DT-01` (alt sub-check).
 
 ## BUG-15 — [FR-05] Price shows "VND" instead of `₫`
 - **Severity:** Low · **Issue:** [#16](https://github.com/linhkhoi1309/eshop-sut/issues/16)
 - **Spec:** FR-05 R3 / FR-21 — use `₫` with thousands separator.
 - **Actual:** shows `… VND` (`Home.jsx:87` — `{Number(p.price).toLocaleString()} VND`).
-- **Evidence:** `docs/evidence/bug-15.png` · **Traceability:** `FR05-DT-01` (price sub-check).
+- **Evidence:** ![BUG-15 evidence](evidence/bug-15.png) · **Traceability:** `FR05-DT-01` (price sub-check).
 
 ## BUG-16 — [FR-05] No loading state while fetching
 - **Severity:** Low · **Issue:** [#17](https://github.com/linhkhoi1309/eshop-sut/issues/17)
 - **Spec:** FR-05 R6 — show a loading state during fetch.
 - **Actual:** no loading flag; nothing renders during the await (`Home.jsx:12-33`).
-- **Evidence:** `docs/evidence/bug-16.png` · **Traceability:** `FR05-DT-08`.
+- **Evidence:** ![BUG-16 evidence](evidence/bug-16.png) · **Traceability:** `FR05-DT-08`.
 
 ## BUG-17 — [FR-05] No empty-state message when search returns no results
 - **Severity:** Low · **Issue:** [#18](https://github.com/linhkhoi1309/eshop-sut/issues/18)
 - **Spec:** FR-05 R7 / FR-24 — "Khi không có kết quả tìm kiếm phải hiển thị thông báo empty state phù hợp".
 - **Actual (browser-verified):** search `zzzzz` → 0 results, blank area, **no message**
   (`Home.jsx:74-107`; the status line `:109` is gated on `products.length > 0`).
-- **Evidence:** `docs/evidence/bug-17.png` · **Traceability:** `FR05-DT-07`, `FR05-DT-16`.
+- **Evidence:** ![BUG-17 evidence](evidence/bug-17.png) · **Traceability:** `FR05-DT-07`, `FR05-DT-16`.
 
 ---
 
@@ -283,7 +283,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 - **Actual:** `404 "Mã giảm giá không tồn tại…"`. The query `WHERE code = ?` uses SQLite's default
   **BINARY** collation, so `'save10' != 'SAVE10'`. Only masked in the UI because the frontends
   `.toUpperCase()` before sending (`frontend-mobile/App.js:366`). Fix: `WHERE code = ? COLLATE NOCASE`.
-- **Evidence:** `docs/evidence/bug-12.png`
+- **Evidence:** ![BUG-12 evidence](evidence/bug-12.png)
 - **Traceability:** `FR09-DT-14` (contrast `FR05-DT-04`, where search *is* case-insensitive).
 
 ---
@@ -299,7 +299,7 @@ commit `6cdd618`. **Oracle = `README.md`.** Each bug traces to failing case IDs 
 - **Actual:** `200 "Order status updated"` — a normal user can move any order through the state
   machine. Route uses `authenticateToken` only (`server.js:525`), no role check. Same class as
   BUG-06; `GET /api/admin/orders` (`:510`) has the same gap (any user lists all orders).
-- **Evidence:** `docs/evidence/bug-13.png`
+- **Evidence:** ![BUG-13 evidence](evidence/bug-13.png)
 - **Traceability:** `FR10-SEC-01` (auto — non-admin drove status to `confirmed`, got 200).
 
 ---
