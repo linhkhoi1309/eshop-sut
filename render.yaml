@@ -23,7 +23,9 @@ services:
     runtime: node
     rootDir: backend
     plan: free
-    buildCommand: npm install
+    # Build sqlite3 from source so it links against Render's glibc
+    # (the prebuilt binary targets a newer GLIBC than the build image).
+    buildCommand: npm install --build-from-source=sqlite3
     startCommand: node server.js
     envVars:
       - key: NODE_VERSION
